@@ -1,0 +1,32 @@
+# CMake generated files
+/build/
+*.make
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+
+# Executables and binaries
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+
+# IDE specific files
+*.sln
+*.user
+*.ninja
+
+# Other
+*.log
+*.o
+*.obj
+*.pdb
+*.idb
+*.tlog
+*.ipch
+*.pch
+
+# Ignore Visual Studio files
+.vscode/
