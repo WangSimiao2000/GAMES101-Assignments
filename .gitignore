@@ -1,5 +1,5 @@
 # CMake generated files
-/build/
+build/
 *.make
 CMakeCache.txt
 CMakeFiles/
