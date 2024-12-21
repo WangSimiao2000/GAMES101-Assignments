@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 # 设置 Eigen 的包含目录
-include_directories("${CMAKE_SOURCE_DIR}/../eigen-3.4.0")
+include_directories("${CMAKE_SOURCE_DIR}/../eigen3")
 
 # 添加可执行文件
 add_executable(Rasterizer main.cpp rasterizer.hpp rasterizer.cpp Triangle.hpp Triangle.cpp)

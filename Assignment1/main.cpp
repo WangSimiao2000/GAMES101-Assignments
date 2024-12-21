@@ -26,6 +26,18 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     // TODO: Implement this function
     // Create the model matrix for rotating the triangle around the Z axis.
     // Then return it.
+    
+    // 将角度从度转为弧度（如果传入的是度的话）
+    float angle_in_radians = rotation_angle * MY_PI / 180.0f;
+
+    // 创建绕Z轴的旋转矩阵
+	Eigen::Matrix4f rotation_matrix = Eigen::Matrix4f::Identity(); // 初始化为单位矩阵
+    rotation_matrix(0, 0) = cos(angle_in_radians);  // cos(θ)
+    rotation_matrix(0, 1) = -sin(angle_in_radians); // -sin(θ)
+    rotation_matrix(1, 0) = sin(angle_in_radians);  // sin(θ)
+    rotation_matrix(1, 1) = cos(angle_in_radians);  // cos(θ)
+
+	model = rotation_matrix * model;
 
     return model;
 }
@@ -40,6 +52,38 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     // TODO: Implement this function
     // Create the projection matrix for the given parameters.
     // Then return it.
+
+    float top, bottom, left, right;
+	top = zNear * tan(eye_fov / 2.0f);
+	bottom = -top;
+	right = top * aspect_ratio;
+	left = -right;
+
+	// 透视投影矩阵
+	// 正交投影矩阵=缩放矩阵dot平移矩阵
+	// 透视投影矩阵=正交投影矩阵dot挤压操作矩阵
+	Eigen::Matrix4f S_ortho = Eigen::Matrix4f::Identity(); // 缩放矩阵
+	S_ortho(0, 0) = 2.0f / (right - left);
+	S_ortho(1, 1) = 2.0f / (top - bottom);
+	S_ortho(2, 2) = 2.0f / (zNear - zFar);
+
+	Eigen::Matrix4f T_ortho = Eigen::Matrix4f::Identity(); // 平移矩阵
+	T_ortho(0, 3) = -(right + left) / 2.0f;
+	T_ortho(1, 3) = -(top + bottom) / 2.0f;
+	T_ortho(2, 3) = -(zNear + zFar) / 2.0f;
+
+	Eigen::Matrix4f orthoMatrix = Eigen::Matrix4f::Identity(); // 正交投影矩阵
+	orthoMatrix = S_ortho * T_ortho;
+
+	Eigen::Matrix4f persp2ortho = Eigen::Matrix4f::Zero(); // 将透视空间转换为正交空间的矩阵
+	persp2ortho(0, 0) = zNear;
+	persp2ortho(1, 1) = zNear;
+	persp2ortho(2, 2) = zNear + zFar;
+	persp2ortho(2, 3) = -zNear * zFar;
+	persp2ortho(3, 2) = -1;
+
+	// 透视投影矩阵
+	projection = orthoMatrix * persp2ortho;
 
     return projection;
 }
