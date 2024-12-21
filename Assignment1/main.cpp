@@ -88,6 +88,35 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     return projection;
 }
 
+Eigen::Matrix4f get_rotation(Vector3f axis, float angle) {
+	// 构建一个函数，返回绕任意轴旋转的旋转矩阵
+	// axis: 旋转轴，angle: 旋转角度
+
+	// 归一化旋转轴
+	axis.normalize();
+	float x = axis[0], y = axis[1], z = axis[2]; // 旋转轴的三个分量
+	float radian = angle * MY_PI / 180.0f; // 角度转弧度
+
+	Eigen::Matrix3f K = Eigen::Matrix3f::Zero(); // 构建反对称矩阵
+	K(0, 1) = -z; 
+    K(0, 2) = y;
+	K(1, 0) = z;
+	K(1, 2) = -x;
+	K(2, 0) = -y;
+	K(2, 1) = x;
+
+	// 计算旋转矩阵 R = I + sin(θ)K + (1 - cos(θ))K^2
+    Eigen::Matrix3f I = Eigen::Matrix3f::Identity();
+	Eigen::Matrix3f R = I + sin(radian) * K + (1 - cos(radian)) * K * K;
+
+	// 将3x3的旋转矩阵转换为4x4的旋转矩阵
+	Eigen::Matrix4f rotation_matrix = Eigen::Matrix4f::Identity();
+	rotation_matrix.block<3, 3>(0, 0) = R;
+
+	return rotation_matrix;
+
+}
+
 int main(int argc, const char** argv)
 {
     float angle = 0;
