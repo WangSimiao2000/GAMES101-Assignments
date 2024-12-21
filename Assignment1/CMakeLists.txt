@@ -17,7 +17,13 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories("${CMAKE_SOURCE_DIR}/../eigen3")
 
 # 添加可执行文件
-add_executable(Rasterizer main.cpp rasterizer.hpp rasterizer.cpp Triangle.hpp Triangle.cpp)
+add_executable(Rasterizer 
+	main.cpp 
+	rasterizer.hpp 
+	rasterizer.cpp 
+	Triangle.hpp 
+	Triangle.cpp
+)
 
 # 链接 OpenCV 库
 target_link_libraries(Rasterizer ${OpenCV_LIBRARIES})
