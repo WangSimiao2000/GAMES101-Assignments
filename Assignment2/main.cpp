@@ -31,7 +31,39 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
     // TODO: Copy-paste your implementation from the previous assignment.
-    Eigen::Matrix4f projection;
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
+
+    float top, bottom, left, right;
+    top = zNear * tan(eye_fov / 2.0f);
+    bottom = -top;
+    right = top * aspect_ratio;
+    left = -right;
+
+    // 透视投影矩阵
+    // 正交投影矩阵=缩放矩阵dot平移矩阵
+    // 透视投影矩阵=正交投影矩阵dot挤压操作矩阵
+    Eigen::Matrix4f S_ortho = Eigen::Matrix4f::Identity(); // 缩放矩阵
+    S_ortho(0, 0) = 2.0f / (right - left);
+    S_ortho(1, 1) = 2.0f / (top - bottom);
+    S_ortho(2, 2) = 2.0f / (zNear - zFar);
+
+    Eigen::Matrix4f T_ortho = Eigen::Matrix4f::Identity(); // 平移矩阵
+    T_ortho(0, 3) = -(right + left) / 2.0f;
+    T_ortho(1, 3) = -(top + bottom) / 2.0f;
+    T_ortho(2, 3) = -(zNear + zFar) / 2.0f;
+
+    Eigen::Matrix4f orthoMatrix = Eigen::Matrix4f::Identity(); // 正交投影矩阵
+    orthoMatrix = S_ortho * T_ortho;
+
+    Eigen::Matrix4f persp2ortho = Eigen::Matrix4f::Zero(); // 将透视空间转换为正交空间的矩阵
+    persp2ortho(0, 0) = zNear;
+    persp2ortho(1, 1) = zNear;
+    persp2ortho(2, 2) = zNear + zFar;
+    persp2ortho(2, 3) = -zNear * zFar;
+    persp2ortho(3, 2) = -1;
+
+    // 透视投影矩阵
+    projection = orthoMatrix * persp2ortho;
 
     return projection;
 }
