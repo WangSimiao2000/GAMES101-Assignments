@@ -17,3 +17,4 @@
 
 - 作业0: [配置环境, 学习Eigen库的使用](https://wangsimiao2000.github.io/posts/GAMES101-Assignment0/)
 - 作业1: [计算选择矩阵及投影矩阵, 渲染三角形](https://wangsimiao2000.github.io/posts/GAMES101-Assignment1/)
+- 作业2: [光栅化显示三角形并进行深度测试](https://wangsimiao2000.github.io/posts/GAMES101-Assignment2/)
