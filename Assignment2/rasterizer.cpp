@@ -127,7 +127,6 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     float y_min = std::min(v[0].y(), std::min(v[1].y(), v[2].y()));
     float y_max = std::max(v[0].y(), std::max(v[1].y(), v[2].y()));
 
-
 	// 根据包围盒的范围, 找到整数索引范围, 用std::floor和std::ceil取整
 	int x_min_int = std::floor(x_min);
 	int x_max_int = std::ceil(x_max);
@@ -153,7 +152,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
 			if (insideTriangle(x_center, y_center, t.v)) {
 
 				// 如果在三角形内部, 则计算像素点的深度值
-                auto[alpha, beta, gamma] = computeBarycentric2D(x, y, t.v); // 
+                auto[alpha, beta, gamma] = computeBarycentric2D(x, y, t.v);
                 float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
                 float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
 				z_interpolated *= w_reciprocal; // 当前像素点的深度值
