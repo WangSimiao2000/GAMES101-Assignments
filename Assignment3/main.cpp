@@ -49,8 +49,15 @@ Eigen::Matrix4f get_model_matrix(float angle)
 
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
-    // TODO: Use the same projection matrix from the previous assignments
+    Eigen::Matrix4f projection;
+    float top = -tan(DEG2RAD(eye_fov / 2.0f) * abs(zNear));
+    float right = top * aspect_ratio;
 
+    projection << zNear / right, 0, 0, 0,
+        0, zNear / top, 0, 0,
+        0, 0, (zNear + zFar) / (zNear - zFar), (2 * zNear * zFar) / (zFar - zNear),
+        0, 0, 1, 0;
+    return projection;
 }
 
 Eigen::Vector3f vertex_shader(const vertex_shader_payload& payload)
@@ -120,29 +127,43 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
 
 Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
 {
-    Eigen::Vector3f ka = Eigen::Vector3f(0.005, 0.005, 0.005);
-    Eigen::Vector3f kd = payload.color;
-    Eigen::Vector3f ks = Eigen::Vector3f(0.7937, 0.7937, 0.7937);
+	Eigen::Vector3f ka = Eigen::Vector3f(0.005, 0.005, 0.005); // 环境光反射系数
+	Eigen::Vector3f kd = payload.color; // 漫反射系数(颜色)
+	Eigen::Vector3f ks = Eigen::Vector3f(0.7937, 0.7937, 0.7937); // 镜面反射系数
 
-    auto l1 = light{{20, 20, 20}, {500, 500, 500}};
-    auto l2 = light{{-20, 20, 0}, {500, 500, 500}};
+	auto l1 = light{ {20, 20, 20}, {500, 500, 500} }; // 光源1
+	auto l2 = light{ {-20, 20, 0}, {500, 500, 500} }; // 光源2
 
-    std::vector<light> lights = {l1, l2};
-    Eigen::Vector3f amb_light_intensity{10, 10, 10};
-    Eigen::Vector3f eye_pos{0, 0, 10};
+	std::vector<light> lights = { l1, l2 }; // 光源列表
+	Eigen::Vector3f amb_light_intensity{ 10, 10, 10 }; // 环境光强度
+	Eigen::Vector3f eye_pos{ 0, 0, 10 }; // 视点位置
 
-    float p = 150;
+	float p = 150; // 镜面反射的指数
 
-    Eigen::Vector3f color = payload.color;
-    Eigen::Vector3f point = payload.view_pos;
-    Eigen::Vector3f normal = payload.normal;
+	Eigen::Vector3f color = payload.color; // 片元颜色
+	Eigen::Vector3f point = payload.view_pos; // 片元位置
+	Eigen::Vector3f normal = payload.normal; // 片元法向量
 
     Eigen::Vector3f result_color = {0, 0, 0};
     for (auto& light : lights)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
+		Eigen::Vector3f AmbientColor, DiffuseColor, SpecularColor; // 漫反射光、镜面反射光
+
+		float r = (point - light.position).norm(); // 光源到片元的距离
+		Eigen::Vector3f currLightIntensity = light.intensity / (r * r); // 当前光源强度
+
+		Eigen::Vector3f view_dir = (eye_pos - point).normalized(); // 视线方向
+		Eigen::Vector3f light_dir = (light.position - point).normalized(); // 光线方向
+		Eigen::Vector3f normal_dir = normal.normalized(); // 法向量
+		Eigen::Vector3f h = (view_dir + light_dir).normalized(); // 半程向量
+
+		DiffuseColor = kd.cwiseProduct(currLightIntensity) * std::max(0.0f, normal_dir.dot(light_dir)); // 漫反射光
+		SpecularColor = ks.cwiseProduct(currLightIntensity) * std::pow(std::max(0.0f, normal_dir.dot(h)), p); // 镜面反射光
+        AmbientColor = ka.cwiseProduct(amb_light_intensity); // 环境光
         
+		result_color += AmbientColor + DiffuseColor + SpecularColor; // 累加漫反射光和镜面反射光
     }
 
     return result_color * 255.f;
@@ -241,6 +262,9 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
 int main(int argc, const char** argv)
 {
     std::vector<Triangle*> TriangleList;
+
+    // 设置 OpenCV 日志级别为错误级别（ERROR），隐藏 INFO 级别信息
+    cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
 
     float angle = 140.0;
     bool command_line = false;
